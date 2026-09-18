@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>イラレ グリッド計算ツール</title>
+<style>
+  :root {
+    --bg: #f4f3ef;
+    --panel: #ffffff;
+    --ink: #1c1c1c;
+    --accent: #d9572c;
+    --line: #e2e0da;
+    --mono: "SFMono-Regular", Consolas, "Courier New", monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    background: var(--panel);
+    width: 100%;
+    max-width: 480px;
+    padding: 32px 28px 28px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  h1 {
+    font-size: 15px;
+    letter-spacing: 0.05em;
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+  .sub {
+    font-size: 12px;
+    color: #888;
+    margin: 0 0 28px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+  }
+  .row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .field {
+    flex: 1;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: var(--mono);
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fbfbfa;
+    color: var(--ink);
+  }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .results {
+    margin-top: 28px;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+  }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-label {
+    font-size: 13px;
+    color: #555;
+  }
+  .result-value {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .result-value.warn {
+    color: var(--accent);
+  }
+  .unit {
+    font-size: 12px;
+    color: #999;
+    margin-left: 2px;
+  }
+  .note {
+    margin-top: 20px;
+    font-size: 11px;
+    color: #999;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>グリッド計算ツール</h1>
+  <p class="sub">文字サイズ・文字送り・行数からグリッドを算出</p>
+
+  <div class="row">
+    <div class="field">
+      <label for="fontSize">文字サイズ S (pt)</label>
+      <input type="number" id="fontSize" value="7" step="0.1">
+    </div>
+    <div class="field">
+      <label for="leading">文字送り L (pt)</label>
+      <input type="number" id="leading" value="12" step="0.1">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="lines">行どり n</label>
+      <input type="number" id="lines" value="3" step="1" min="1">
+    </div>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <p class="note">
+    字間 = L − S ／ nグリッド長 = S + (n−1)×L ／ グリッド間隔 = 2L − S ／ 合計 = nグリッド長 + グリッド間隔<br>
+    ※ L &lt; S の場合、字間はマイナス（文字が重なる）になります。
+  </p>
+</div>
+
+<script>
+  const fontSizeEl = document.getElementById('fontSize');
+  const leadingEl = document.getElementById('leading');
+  const linesEl = document.getElementById('lines');
+  const resultsEl = document.getElementById('results');
+
+  function fmt(n) {
+    const rounded = Math.round(n * 100) / 100;
+    return rounded.toString();
+  }
+
+  function calc() {
+    const S = parseFloat(fontSizeEl.value);
+    const L = parseFloat(leadingEl.value);
+    const n = parseInt(linesEl.value, 10);
+
+    if (isNaN(S) || isNaN(L) || isNaN(n) || n < 1) {
+      resultsEl.innerHTML = '<div class="result-row"><span class="result-label">入力値を確認してください</span></div>';
+      return;
+    }
+
+    const tracking = L - S;
+    const gridLength = S + (n - 1) * L;
+    const gridGap = 2 * L - S;
+    const total = gridLength + gridGap;
+
+    const warnTracking = tracking < 0;
+    const warnGap = gridGap < 0;
+
+    resultsEl.innerHTML = `
+      <div class="result-row">
+        <span class="result-label">字間 (L − S)</span>
+        <span class="result-value ${warnTracking ? 'warn' : ''}">${fmt(tracking)}<span class="unit">pt</span></span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">${n}グリッド長 (S + (n−1)×L)</span>
+        <span class="result-value">${fmt(gridLength)}<span class="unit">pt</span></span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">グリッド間隔 (2L − S)</span>
+        <span class="result-value ${warnGap ? 'warn' : ''}">${fmt(gridGap)}<span class="unit">pt</span></span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">グリッド長＋グリッド間隔（次グリッドまでの合計）</span>
+        <span class="result-value">${fmt(total)}<span class="unit">pt</span></span>
+      </div>
+    `;
+  }
+
+  [fontSizeEl, leadingEl, linesEl].forEach(el => {
+    el.addEventListener('input', calc);
+  });
+
+  calc();
+</script>
+</body>
+</html>
