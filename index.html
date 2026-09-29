@@ -9,6 +9,8 @@
     --panel: #ffffff;
     --ink: #1c1c1c;
     --accent: #d9572c;
+    --good: #2e7d32;
+    --blue: #3d6ea5;
     --line: #e2e0da;
     --mono: "SFMono-Regular", Consolas, "Courier New", monospace;
   }
@@ -25,7 +27,7 @@
   .card {
     background: var(--panel);
     width: 100%;
-    max-width: 480px;
+    max-width: 560px;
     padding: 32px 28px 28px;
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -36,10 +38,23 @@
     margin: 0 0 4px;
     font-weight: 600;
   }
+  h2 {
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: #999;
+    margin: 28px 0 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .section-sub {
+    font-size: 11.5px;
+    color: #999;
+    margin: 0 0 16px;
+  }
   .sub {
     font-size: 12px;
     color: #888;
-    margin: 0 0 28px;
+    margin: 0 0 24px;
   }
   label {
     display: block;
@@ -55,6 +70,7 @@
   }
   .field {
     flex: 1;
+    min-width: 0;
   }
   input[type="number"] {
     width: 100%;
@@ -66,14 +82,23 @@
     background: #fbfbfa;
     color: var(--ink);
   }
-  input[type="number"]:focus {
+  select {
+    width: 100%;
+    padding: 10px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fbfbfa;
+    color: var(--ink);
+  }
+  input[type="number"]:focus, select:focus {
     outline: none;
     border-color: var(--accent);
   }
   .results {
-    margin-top: 28px;
+    margin-top: 8px;
     border-top: 1px solid var(--line);
-    padding-top: 20px;
+    padding-top: 4px;
   }
   .result-row {
     display: flex;
@@ -81,82 +106,322 @@
     align-items: baseline;
     padding: 10px 0;
     border-bottom: 1px dashed var(--line);
+    gap: 12px;
   }
   .result-row:last-child { border-bottom: none; }
   .result-label {
-    font-size: 13px;
+    font-size: 12.5px;
     color: #555;
   }
   .result-value {
     font-family: var(--mono);
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
+    white-space: nowrap;
   }
-  .result-value.warn {
-    color: var(--accent);
-  }
+  .result-value.warn { color: var(--accent); }
+  .result-value.good { color: var(--good); }
   .unit {
-    font-size: 12px;
+    font-size: 11px;
     color: #999;
     margin-left: 2px;
+    font-weight: 400;
   }
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 8px;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  .tag.warn { background: #fbe6dd; color: var(--accent); }
+  .tag.good { background: #e2f0e3; color: var(--good); }
   .note {
-    margin-top: 20px;
+    margin-top: 16px;
     font-size: 11px;
     color: #999;
     line-height: 1.6;
   }
+  .preview {
+    margin-top: 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+  }
+  .preview svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 520px;
+  }
+  .download-btn {
+    margin-top: 16px;
+    width: 100%;
+    padding: 12px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .download-btn:hover { background: #333; }
+  .download-btn.blue { background: var(--blue); }
+  .download-btn.blue:hover { background: #2f5680; }
+
+  /* ---- tabs ---- */
+  .tabs {
+    display: flex;
+    margin-top: 32px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 8px;
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #aaa;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    font-family: inherit;
+  }
+  .tab-btn.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .tab-panel { display: none; padding-top: 20px; }
+  .tab-panel.active { display: block; }
 </style>
 </head>
 <body>
 <div class="card">
   <h1>グリッド計算ツール</h1>
-  <p class="sub">文字サイズ・文字送り・行数からグリッドを算出</p>
+  <p class="sub">文字サイズ・文字送り・行数からグリッドを算出し、アートボードに配置</p>
 
+  <h2>アートボード（共通）</h2>
   <div class="row">
     <div class="field">
-      <label for="fontSize">文字サイズ S (pt)</label>
-      <input type="number" id="fontSize" value="7" step="0.1">
+      <label for="abWidth">幅</label>
+      <input type="number" id="abWidth" value="210" step="0.1">
     </div>
     <div class="field">
-      <label for="leading">文字送り L (pt)</label>
-      <input type="number" id="leading" value="12" step="0.1">
+      <label for="abHeight">高さ</label>
+      <input type="number" id="abHeight" value="297" step="0.1">
+    </div>
+    <div class="field" style="flex: 0 0 84px;">
+      <label for="abUnit">単位</label>
+      <select id="abUnit">
+        <option value="mm" selected>mm</option>
+        <option value="pt">pt</option>
+      </select>
     </div>
   </div>
 
-  <div class="row">
-    <div class="field">
-      <label for="lines">行どり n</label>
-      <input type="number" id="lines" value="3" step="1" min="1">
-    </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-char">① 文字グリッド</button>
+    <button class="tab-btn" data-tab="tab-div">② 分割グリッド</button>
   </div>
 
-  <div class="results" id="results"></div>
+  <!-- ===================== TAB 1: 文字グリッドの敷き詰め ===================== -->
+  <div class="tab-panel active" id="tab-char">
+    <p class="section-sub">文字サイズ・文字送り・行数からグリッドを作り、余白がグリッド間隔以下になる個数だけ並べます</p>
 
-  <p class="note">
-    字間 = L − S ／ nグリッド長 = S + (n−1)×L ／ グリッド間隔 = 2L − S ／ 合計 = nグリッド長 + グリッド間隔<br>
-    ※ L &lt; S の場合、字間はマイナス（文字が重なる）になります。
-  </p>
+    <h2>グリッドの基準</h2>
+    <div class="row">
+      <div class="field">
+        <label for="fontSize">文字サイズ S (pt)</label>
+        <input type="number" id="fontSize" value="7" step="0.1">
+      </div>
+      <div class="field">
+        <label for="leading">文字送り L (pt)</label>
+        <input type="number" id="leading" value="12" step="0.1">
+      </div>
+      <div class="field">
+        <label for="lines">行どり n</label>
+        <input type="number" id="lines" value="3" step="1" min="1">
+      </div>
+    </div>
+
+    <div class="results" id="results"></div>
+
+    <h2>アートボードへの配置</h2>
+    <div class="results" id="placementResults"></div>
+
+    <div class="preview" id="preview"></div>
+    <button class="download-btn" id="downloadBtn">SVGでダウンロード（文字グリッド）</button>
+
+    <p class="note">
+      字間 = L − S ／ nグリッド長 = S + (n−1)×L ／ グリッド間隔 = 2L − S<br>
+      アートボードに収まる最大個数のグリッドを並べ、余りを外側の余白（左右・上下均等）とします。
+      余白がグリッド間隔以下なら「OK」、超える場合は「余白大」と表示します（アートボードのサイズ次第で必ず余白以下にできるとは限りません）。
+    </p>
+  </div>
+
+  <!-- ===================== TAB 2: 分割数指定グリッド ===================== -->
+  <div class="tab-panel" id="tab-div">
+    <p class="section-sub">縦横の分割数・間隔・外側の余白を直接指定して作る、独立したグリッドです（①とは連動しません）</p>
+
+    <div class="row">
+      <div class="field">
+        <label for="divCols">横分割数</label>
+        <input type="number" id="divCols" value="12" step="1" min="1">
+      </div>
+      <div class="field">
+        <label for="divRows">縦分割数</label>
+        <input type="number" id="divRows" value="8" step="1" min="1">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="divGutter">グリッド間隔（単位はアートボードに合わせる）</label>
+        <input type="number" id="divGutter" value="4" step="0.1">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="divMarginLR">左右の余白（片側）</label>
+        <input type="number" id="divMarginLR" value="15" step="0.1">
+      </div>
+      <div class="field">
+        <label for="divMarginTB">上下の余白（片側）</label>
+        <input type="number" id="divMarginTB" value="15" step="0.1">
+      </div>
+    </div>
+
+    <div class="results" id="divResults"></div>
+
+    <div class="preview" id="divPreview"></div>
+    <button class="download-btn blue" id="divDownloadBtn">SVGでダウンロード（分割グリッド）</button>
+
+    <p class="note">
+      列幅 = (アートボード幅 − 左右余白×2 − 間隔×(横分割数−1)) ÷ 横分割数<br>
+      行高さ = (アートボード高さ − 上下余白×2 − 間隔×(縦分割数−1)) ÷ 縦分割数<br>
+      間隔・余白の数値は上の「アートボード」欄と同じ単位（mm/pt）で入力してください。
+    </p>
+  </div>
 </div>
 
 <script>
+  // ---- tab switching ----
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => b.classList.remove('active'));
+      tabPanels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---- shared elements ----
   const fontSizeEl = document.getElementById('fontSize');
   const leadingEl = document.getElementById('leading');
   const linesEl = document.getElementById('lines');
+  const abWidthEl = document.getElementById('abWidth');
+  const abHeightEl = document.getElementById('abHeight');
+  const abUnitEl = document.getElementById('abUnit');
   const resultsEl = document.getElementById('results');
+
+  // ---- feature 1 elements ----
+  const placementResultsEl = document.getElementById('placementResults');
+  const previewEl = document.getElementById('preview');
+  const downloadBtn = document.getElementById('downloadBtn');
+  let lastSVG = null;
+
+  // ---- feature 2 elements ----
+  const divColsEl = document.getElementById('divCols');
+  const divRowsEl = document.getElementById('divRows');
+  const divGutterEl = document.getElementById('divGutter');
+  const divMarginLREl = document.getElementById('divMarginLR');
+  const divMarginTBEl = document.getElementById('divMarginTB');
+  const divResultsEl = document.getElementById('divResults');
+  const divPreviewEl = document.getElementById('divPreview');
+  const divDownloadBtn = document.getElementById('divDownloadBtn');
+  let lastDivSVG = null;
 
   function fmt(n) {
     const rounded = Math.round(n * 100) / 100;
     return rounded.toString();
   }
 
-  function calc() {
+  function mmToPt(mm) { return mm * 72 / 25.4; }
+  function toPt(value, unit) { return unit === 'mm' ? mmToPt(value) : value; }
+
+  function getArtboard() {
+    const rawW = parseFloat(abWidthEl.value);
+    const rawH = parseFloat(abHeightEl.value);
+    const unit = abUnitEl.value;
+    if (isNaN(rawW) || isNaN(rawH) || rawW <= 0 || rawH <= 0) return null;
+    return { rawW, rawH, unit, Wpt: toPt(rawW, unit), Hpt: toPt(rawH, unit) };
+  }
+
+  function svgWrapper(Wpt, Hpt, rawW, rawH, unit, innerContent) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(rawW)}${unit}" height="${fmt(rawH)}${unit}" viewBox="0 0 ${fmt(Wpt)} ${fmt(Hpt)}">
+<rect x="0" y="0" width="${fmt(Wpt)}" height="${fmt(Hpt)}" fill="#ffffff" stroke="#000000" stroke-width="0.5"/>
+${innerContent}
+</svg>`;
+  }
+
+  function download(svgString, filename) {
+    if (!svgString) return;
+    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // =========================================================
+  // Feature 1: character-grid tiling
+  // =========================================================
+  function computeAxis(sizePt, unitLength, gap) {
+    if (!(sizePt > 0) || !(unitLength > 0)) {
+      return { count: 0, used: 0, margin: sizePt, marginEach: sizePt / 2, ok: false };
+    }
+    const pitch = unitLength + gap;
+    let count;
+    if (pitch <= 0) {
+      count = Math.floor(sizePt / unitLength);
+    } else {
+      count = Math.floor((sizePt + gap) / pitch);
+    }
+    if (count < 0) count = 0;
+    let used = count > 0 ? count * unitLength + (count - 1) * gap : 0;
+    while (count > 0 && used > sizePt + 1e-9) {
+      count--;
+      used = count > 0 ? count * unitLength + (count - 1) * gap : 0;
+    }
+    const margin = sizePt - used;
+    const marginEach = margin / 2;
+    const ok = margin <= gap + 1e-6;
+    return { count, used, margin, marginEach, ok };
+  }
+
+  function calcCharGrid() {
     const S = parseFloat(fontSizeEl.value);
     const L = parseFloat(leadingEl.value);
     const n = parseInt(linesEl.value, 10);
 
-    if (isNaN(S) || isNaN(L) || isNaN(n) || n < 1) {
-      resultsEl.innerHTML = '<div class="result-row"><span class="result-label">入力値を確認してください</span></div>';
+    if (isNaN(S) || isNaN(L) || isNaN(n) || n < 1 || S <= 0) {
+      resultsEl.innerHTML = '<div class="result-row"><span class="result-label">グリッドの入力値を確認してください</span></div>';
+      placementResultsEl.innerHTML = '';
+      previewEl.innerHTML = '';
+      lastSVG = null;
       return;
     }
 
@@ -186,13 +451,143 @@
         <span class="result-value">${fmt(total)}<span class="unit">pt</span></span>
       </div>
     `;
+
+    const ab = getArtboard();
+    if (!ab || gridLength <= 0) {
+      placementResultsEl.innerHTML = '<div class="result-row"><span class="result-label">アートボードの入力値を確認してください</span></div>';
+      previewEl.innerHTML = '';
+      lastSVG = null;
+      return;
+    }
+    const { Wpt, Hpt, rawW, rawH, unit } = ab;
+
+    const colInfo = computeAxis(Wpt, gridLength, gridGap);
+    const rowInfo = computeAxis(Hpt, gridLength, gridGap);
+
+    placementResultsEl.innerHTML = `
+      <div class="result-row">
+        <span class="result-label">横方向の個数（列）</span>
+        <span class="result-value">${colInfo.count}<span class="unit">個</span></span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">左右の余白（片側）</span>
+        <span class="result-value ${colInfo.ok ? 'good' : 'warn'}">${fmt(colInfo.marginEach)}<span class="unit">pt</span></span>
+        <span class="tag ${colInfo.ok ? 'good' : 'warn'}">${colInfo.ok ? 'OK' : '余白大'}</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">縦方向の個数（行）</span>
+        <span class="result-value">${rowInfo.count}<span class="unit">個</span></span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">上下の余白（片側）</span>
+        <span class="result-value ${rowInfo.ok ? 'good' : 'warn'}">${fmt(rowInfo.marginEach)}<span class="unit">pt</span></span>
+        <span class="tag ${rowInfo.ok ? 'good' : 'warn'}">${rowInfo.ok ? 'OK' : '余白大'}</span>
+      </div>
+    `;
+
+    const pitch = gridLength + gridGap;
+    let cells = '';
+    for (let i = 0; i < colInfo.count; i++) {
+      const x = colInfo.marginEach + i * pitch;
+      for (let j = 0; j < rowInfo.count; j++) {
+        const y = rowInfo.marginEach + j * pitch;
+        cells += `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(gridLength)}" height="${fmt(gridLength)}" fill="#cfe0f7" stroke="#7fa8dc" stroke-width="0.25"/>`;
+      }
+    }
+    const contentBox = `<rect x="${fmt(colInfo.marginEach)}" y="${fmt(rowInfo.marginEach)}" width="${fmt(colInfo.used)}" height="${fmt(rowInfo.used)}" fill="none" stroke="#d9572c" stroke-width="0.5" stroke-dasharray="3,2"/>`;
+
+    const svgString = svgWrapper(Wpt, Hpt, rawW, rawH, unit, contentBox + cells);
+    previewEl.innerHTML = svgString;
+    lastSVG = svgString;
   }
 
-  [fontSizeEl, leadingEl, linesEl].forEach(el => {
-    el.addEventListener('input', calc);
+  downloadBtn.addEventListener('click', () => download(lastSVG, 'grid_character.svg'));
+
+  // =========================================================
+  // Feature 2: division-count grid (independent)
+  // =========================================================
+  function calcDivisionGrid() {
+    const ab = getArtboard();
+    const cols = parseInt(divColsEl.value, 10);
+    const rows = parseInt(divRowsEl.value, 10);
+    const gutterRaw = parseFloat(divGutterEl.value);
+    const marginLRRaw = parseFloat(divMarginLREl.value);
+    const marginTBRaw = parseFloat(divMarginTBEl.value);
+
+    if (!ab || isNaN(cols) || isNaN(rows) || cols < 1 || rows < 1 ||
+        isNaN(gutterRaw) || isNaN(marginLRRaw) || isNaN(marginTBRaw) || gutterRaw < 0 || marginLRRaw < 0 || marginTBRaw < 0) {
+      divResultsEl.innerHTML = '<div class="result-row"><span class="result-label">入力値を確認してください</span></div>';
+      divPreviewEl.innerHTML = '';
+      lastDivSVG = null;
+      return;
+    }
+
+    const { Wpt, Hpt, rawW, rawH, unit } = ab;
+    const gutterPt = toPt(gutterRaw, unit);
+    const marginLRPt = toPt(marginLRRaw, unit);
+    const marginTBPt = toPt(marginTBRaw, unit);
+
+    const contentW = Wpt - 2 * marginLRPt;
+    const contentH = Hpt - 2 * marginTBPt;
+    const colWidth = (contentW - (cols - 1) * gutterPt) / cols;
+    const rowHeight = (contentH - (rows - 1) * gutterPt) / rows;
+
+    const valid = contentW > 0 && contentH > 0 && colWidth > 0 && rowHeight > 0;
+
+    divResultsEl.innerHTML = `
+      <div class="result-row">
+        <span class="result-label">コンテンツ幅 × 高さ</span>
+        <span class="result-value ${valid ? '' : 'warn'}">${fmt(contentW)} × ${fmt(contentH)}<span class="unit">pt</span></span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">1マスの列幅</span>
+        <span class="result-value ${colWidth > 0 ? '' : 'warn'}">${fmt(colWidth)}<span class="unit">pt</span></span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">1マスの行高さ</span>
+        <span class="result-value ${rowHeight > 0 ? '' : 'warn'}">${fmt(rowHeight)}<span class="unit">pt</span></span>
+      </div>
+      ${valid ? '' : '<div class="result-row"><span class="result-label warn">余白・間隔がアートボードサイズに対して大きすぎます</span></div>'}
+    `;
+
+    if (!valid) {
+      divPreviewEl.innerHTML = '';
+      lastDivSVG = null;
+      return;
+    }
+
+    let cells = '';
+    for (let i = 0; i < cols; i++) {
+      const x = marginLRPt + i * (colWidth + gutterPt);
+      for (let j = 0; j < rows; j++) {
+        const y = marginTBPt + j * (rowHeight + gutterPt);
+        cells += `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(colWidth)}" height="${fmt(rowHeight)}" fill="#d9e8d0" stroke="#7fae6a" stroke-width="0.25"/>`;
+      }
+    }
+    const contentBox = `<rect x="${fmt(marginLRPt)}" y="${fmt(marginTBPt)}" width="${fmt(contentW)}" height="${fmt(contentH)}" fill="none" stroke="#3d6ea5" stroke-width="0.5" stroke-dasharray="3,2"/>`;
+
+    const svgString = svgWrapper(Wpt, Hpt, rawW, rawH, unit, contentBox + cells);
+    divPreviewEl.innerHTML = svgString;
+    lastDivSVG = svgString;
+  }
+
+  divDownloadBtn.addEventListener('click', () => download(lastDivSVG, 'grid_division.svg'));
+
+  function recalcAll() {
+    calcCharGrid();
+    calcDivisionGrid();
+  }
+
+  [
+    fontSizeEl, leadingEl, linesEl,
+    abWidthEl, abHeightEl, abUnitEl,
+    divColsEl, divRowsEl, divGutterEl, divMarginLREl, divMarginTBEl
+  ].forEach(el => {
+    el.addEventListener('input', recalcAll);
+    el.addEventListener('change', recalcAll);
   });
 
-  calc();
+  recalcAll();
 </script>
 </body>
 </html>
