@@ -201,6 +201,126 @@
   }
   .tab-panel { display: none; padding-top: 20px; }
   .tab-panel.active { display: block; }
+
+  /* ---- style controls ---- */
+  .check-field { display: flex; align-items: center; }
+  .check-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+  .check-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .slider-row label {
+    flex: 0 0 48px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: #555;
+    margin-bottom: 0;
+  }
+  .slider-row input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent);
+  }
+  .color-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    flex: 0 0 32px;
+  }
+  .color-code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #777;
+  }
+
+  .color-panel {
+    margin-top: 4px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0 14px;
+    background: #fbfbfa;
+  }
+  .color-panel summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 12px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    user-select: none;
+  }
+  .color-panel summary::-webkit-details-marker { display: none; }
+  .color-panel summary::after {
+    content: '▸';
+    float: right;
+    color: #999;
+    transition: transform 0.15s;
+  }
+  .color-panel[open] summary::after { transform: rotate(90deg); }
+  .color-panel[open] summary { border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .color-panel > *:not(summary) { padding-bottom: 2px; }
+  .color-panel details { margin-top: 0; }
+
+  .target-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .target-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: #777;
+    cursor: pointer;
+  }
+  .target-btn.active {
+    border-color: var(--ink);
+    color: var(--ink);
+    font-weight: 700;
+    background: #f0f0ee;
+  }
+  .target-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.15);
+    display: inline-block;
+  }
+  .editing-now {
+    font-size: 11.5px;
+    color: #999;
+    margin: 0 0 14px;
+  }
+  .editing-now strong { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -226,6 +346,90 @@
       </select>
     </div>
   </div>
+
+  <h2>表示スタイル（①②共通）</h2>
+  <div class="row">
+    <div class="field check-field">
+      <label class="check-label"><input type="checkbox" id="fillOn" checked> 塗りを表示</label>
+    </div>
+    <div class="field check-field">
+      <label class="check-label"><input type="checkbox" id="strokeOn" checked> 線を表示</label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label for="strokeWidth">線の太さ (pt)</label>
+      <input type="number" id="strokeWidth" value="0.25" step="0.05" min="0">
+    </div>
+  </div>
+
+  <details class="color-panel">
+    <summary>🎨 色・不透明度を編集</summary>
+
+    <div class="target-tabs">
+      <button type="button" class="target-btn active" id="targetFillBtn" data-target="fill">
+        <span class="target-swatch" id="targetFillSwatch"></span> 塗りの色
+      </button>
+      <button type="button" class="target-btn" id="targetStrokeBtn" data-target="stroke">
+        <span class="target-swatch" id="targetStrokeSwatch"></span> 線の色
+      </button>
+    </div>
+    <p class="editing-now">いま編集中：<strong id="editingTargetLabel">塗りの色</strong></p>
+
+    <div class="row">
+      <div class="field" style="flex: 0 0 120px;">
+        <label for="colorMode">色モード</label>
+        <select id="colorMode">
+          <option value="rgb">RGB</option>
+          <option value="cmyk">CMYK</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="slider-row">
+      <label>不透明度 <span id="opacityVal">50</span>%</label>
+      <input type="range" id="opacitySlider" min="0" max="100" value="50">
+    </div>
+
+    <div id="rgbSliders" style="display:none;">
+      <div class="slider-row">
+        <label>R <span id="rVal">127</span></label>
+        <input type="range" id="rSlider" min="0" max="255" value="127">
+      </div>
+      <div class="slider-row">
+        <label>G <span id="gVal">168</span></label>
+        <input type="range" id="gSlider" min="0" max="255" value="168">
+      </div>
+      <div class="slider-row">
+        <label>B <span id="bVal">220</span></label>
+        <input type="range" id="bSlider" min="0" max="255" value="220">
+      </div>
+    </div>
+
+    <div id="cmykSliders">
+      <div class="slider-row">
+        <label>C <span id="cVal">100</span>%</label>
+        <input type="range" id="cSlider" min="0" max="100" value="100">
+      </div>
+      <div class="slider-row">
+        <label>M <span id="mVal">0</span>%</label>
+        <input type="range" id="mSlider" min="0" max="100" value="0">
+      </div>
+      <div class="slider-row">
+        <label>Y <span id="yVal">0</span>%</label>
+        <input type="range" id="ySlider" min="0" max="100" value="0">
+      </div>
+      <div class="slider-row">
+        <label>K <span id="kVal">0</span>%</label>
+        <input type="range" id="kSlider" min="0" max="100" value="0">
+      </div>
+    </div>
+
+    <div class="color-preview-row">
+      <div class="color-swatch" id="colorSwatch"></div>
+      <span class="color-code" id="colorCode"></span>
+    </div>
+  </details>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="tab-char">① 文字グリッド</button>
@@ -262,8 +466,9 @@
 
     <p class="note">
       字間 = L − S ／ nグリッド長 = S + (n−1)×L ／ グリッド間隔 = 2L − S<br>
-      アートボードに収まる最大個数のグリッドを並べ、余りを外側の余白（左右・上下均等）とします。
-      余白がグリッド間隔以下なら「OK」、超える場合は「余白大」と表示します（アートボードのサイズ次第で必ず余白以下にできるとは限りません）。
+      間隔は理論値のまま固定し、アートボードに収まる最大個数のグリッドを並べます。
+      上下または左右どちらかの余白がグリッド間隔より狭い場合は、その軸（左右が狭ければ列数／上下が狭ければ行数）を1つずつ減らし、余白がグリッド間隔以上になるまで中央揃えで調整します
+      （列数は左右の余白、行数は上下の余白にしか影響しないため、狭くなった軸自身を減らします）。
     </p>
   </div>
 
@@ -274,27 +479,27 @@
     <div class="row">
       <div class="field">
         <label for="divCols">横分割数</label>
-        <input type="number" id="divCols" value="12" step="1" min="1">
+        <input type="number" id="divCols" value="6" step="1" min="1">
       </div>
       <div class="field">
         <label for="divRows">縦分割数</label>
-        <input type="number" id="divRows" value="8" step="1" min="1">
+        <input type="number" id="divRows" value="10" step="1" min="1">
       </div>
     </div>
     <div class="row">
       <div class="field">
         <label for="divGutter">グリッド間隔（単位はアートボードに合わせる）</label>
-        <input type="number" id="divGutter" value="4" step="0.1">
+        <input type="number" id="divGutter" value="6" step="0.1">
       </div>
     </div>
     <div class="row">
       <div class="field">
         <label for="divMarginLR">左右の余白（片側）</label>
-        <input type="number" id="divMarginLR" value="15" step="0.1">
+        <input type="number" id="divMarginLR" value="12" step="0.1">
       </div>
       <div class="field">
         <label for="divMarginTB">上下の余白（片側）</label>
-        <input type="number" id="divMarginTB" value="15" step="0.1">
+        <input type="number" id="divMarginTB" value="12" step="0.1">
       </div>
     </div>
 
@@ -350,6 +555,37 @@
   const divDownloadBtn = document.getElementById('divDownloadBtn');
   let lastDivSVG = null;
 
+  // ---- style control elements ----
+  const fillOnEl = document.getElementById('fillOn');
+  const strokeOnEl = document.getElementById('strokeOn');
+  const strokeWidthEl = document.getElementById('strokeWidth');
+  const colorModeEl = document.getElementById('colorMode');
+  const rgbSlidersEl = document.getElementById('rgbSliders');
+  const cmykSlidersEl = document.getElementById('cmykSliders');
+  const rSliderEl = document.getElementById('rSlider');
+  const gSliderEl = document.getElementById('gSlider');
+  const bSliderEl = document.getElementById('bSlider');
+  const cSliderEl = document.getElementById('cSlider');
+  const mSliderEl = document.getElementById('mSlider');
+  const ySliderEl = document.getElementById('ySlider');
+  const kSliderEl = document.getElementById('kSlider');
+  const rValEl = document.getElementById('rVal');
+  const gValEl = document.getElementById('gVal');
+  const bValEl = document.getElementById('bVal');
+  const cValEl = document.getElementById('cVal');
+  const mValEl = document.getElementById('mVal');
+  const yValEl = document.getElementById('yVal');
+  const kValEl = document.getElementById('kVal');
+  const colorSwatchEl = document.getElementById('colorSwatch');
+  const colorCodeEl = document.getElementById('colorCode');
+  const opacitySliderEl = document.getElementById('opacitySlider');
+  const opacityValEl = document.getElementById('opacityVal');
+  const targetFillBtn = document.getElementById('targetFillBtn');
+  const targetStrokeBtn = document.getElementById('targetStrokeBtn');
+  const targetFillSwatch = document.getElementById('targetFillSwatch');
+  const targetStrokeSwatch = document.getElementById('targetStrokeSwatch');
+  const editingTargetLabel = document.getElementById('editingTargetLabel');
+
   function fmt(n) {
     const rounded = Math.round(n * 100) / 100;
     return rounded.toString();
@@ -357,6 +593,101 @@
 
   function mmToPt(mm) { return mm * 72 / 25.4; }
   function toPt(value, unit) { return unit === 'mm' ? mmToPt(value) : value; }
+
+  // c,m,y,k given as 0-100 percentages
+  function cmykToRgb(c, m, y, k) {
+    const C = c / 100, M = m / 100, Y = y / 100, K = k / 100;
+    const r = Math.round(255 * (1 - C) * (1 - K));
+    const g = Math.round(255 * (1 - M) * (1 - K));
+    const b = Math.round(255 * (1 - Y) * (1 - K));
+    return { r, g, b };
+  }
+
+  // Independent colors for fill and stroke, each remembering its own mode
+  // and slider values, so switching the target never loses or mixes them up.
+  const colorStates = {
+    fill:   { mode: 'rgb',  rgb: { r: 207, g: 224, b: 247 }, cmyk: { c: 16, m: 5, y: 0, k: 0 } },
+    stroke: { mode: 'cmyk', rgb: { r: 0, g: 255, b: 255 },   cmyk: { c: 100, m: 0, y: 0, k: 0 } }
+  };
+  let currentTarget = 'fill';
+  const targetLabelText = { fill: '塗りの色', stroke: '線の色' };
+
+  function colorStringFromState(state) {
+    const { r, g, b } = state.mode === 'cmyk' ? cmykToRgb(state.cmyk.c, state.cmyk.m, state.cmyk.y, state.cmyk.k) : state.rgb;
+    return `rgb(${r},${g},${b})`;
+  }
+
+  // Load the current target's stored values into the mode select + sliders
+  function loadTargetIntoUI() {
+    const state = colorStates[currentTarget];
+    colorModeEl.value = state.mode;
+    const isCmyk = state.mode === 'cmyk';
+    rgbSlidersEl.style.display = isCmyk ? 'none' : 'block';
+    cmykSlidersEl.style.display = isCmyk ? 'block' : 'none';
+    rSliderEl.value = state.rgb.r; gSliderEl.value = state.rgb.g; bSliderEl.value = state.rgb.b;
+    cSliderEl.value = state.cmyk.c; mSliderEl.value = state.cmyk.m; ySliderEl.value = state.cmyk.y; kSliderEl.value = state.cmyk.k;
+    editingTargetLabel.textContent = targetLabelText[currentTarget];
+    targetFillBtn.classList.toggle('active', currentTarget === 'fill');
+    targetStrokeBtn.classList.toggle('active', currentTarget === 'stroke');
+  }
+
+  // Read the sliders back into whichever target is currently selected
+  function saveUIIntoTarget() {
+    const state = colorStates[currentTarget];
+    state.mode = colorModeEl.value;
+    state.rgb = { r: parseInt(rSliderEl.value, 10), g: parseInt(gSliderEl.value, 10), b: parseInt(bSliderEl.value, 10) };
+    state.cmyk = { c: parseFloat(cSliderEl.value), m: parseFloat(mSliderEl.value), y: parseFloat(ySliderEl.value), k: parseFloat(kSliderEl.value) };
+    rValEl.textContent = state.rgb.r; gValEl.textContent = state.rgb.g; bValEl.textContent = state.rgb.b;
+    cValEl.textContent = state.cmyk.c; mValEl.textContent = state.cmyk.m; yValEl.textContent = state.cmyk.y; kValEl.textContent = state.cmyk.k;
+    const isCmyk = state.mode === 'cmyk';
+    rgbSlidersEl.style.display = isCmyk ? 'none' : 'block';
+    cmykSlidersEl.style.display = isCmyk ? 'block' : 'none';
+  }
+
+  function getOpacity() {
+    const pct = parseFloat(opacitySliderEl.value);
+    opacityValEl.textContent = Math.round(pct);
+    return Math.max(0, Math.min(100, pct)) / 100;
+  }
+
+  function updateColorPreview() {
+    saveUIIntoTarget();
+    const opacity = getOpacity();
+    const fillColor = colorStringFromState(colorStates.fill);
+    const strokeColor = colorStringFromState(colorStates.stroke);
+    targetFillSwatch.style.background = fillColor;
+    targetStrokeSwatch.style.background = strokeColor;
+    const activeColor = colorStringFromState(colorStates[currentTarget]);
+    colorSwatchEl.style.background = activeColor;
+    colorSwatchEl.style.opacity = opacity;
+    colorCodeEl.textContent = `${targetLabelText[currentTarget]}: ${activeColor} ／ 不透明度 ${Math.round(opacity * 100)}%`;
+  }
+
+  function getCellStyle() {
+    const fillOn = fillOnEl.checked;
+    const strokeOn = strokeOnEl.checked;
+    const strokeWidth = strokeOn ? Math.max(0, parseFloat(strokeWidthEl.value) || 0) : 0;
+    const fillColor = fillOn ? colorStringFromState(colorStates.fill) : 'none';
+    const strokeColor = strokeOn ? colorStringFromState(colorStates.stroke) : 'none';
+    const opacity = getOpacity();
+    return { fillOn, strokeOn, strokeWidth, fillColor, strokeColor, opacity };
+  }
+
+  colorModeEl.addEventListener('change', () => {
+    const isCmyk = colorModeEl.value === 'cmyk';
+    rgbSlidersEl.style.display = isCmyk ? 'none' : 'block';
+    cmykSlidersEl.style.display = isCmyk ? 'block' : 'none';
+  });
+
+  function selectTarget(target) {
+    saveUIIntoTarget(); // persist whatever was being edited before switching
+    currentTarget = target;
+    loadTargetIntoUI();
+    updateColorPreview();
+  }
+  targetFillBtn.addEventListener('click', () => selectTarget('fill'));
+  targetStrokeBtn.addEventListener('click', () => selectTarget('stroke'));
+  loadTargetIntoUI();
 
   function getArtboard() {
     const rawW = parseFloat(abWidthEl.value);
@@ -389,27 +720,39 @@ ${innerContent}
   // =========================================================
   // Feature 1: character-grid tiling
   // =========================================================
+  // Fit the maximum number of grid units (using the exact, fixed theoretical
+  // gap — never adjusted) into sizePt. An outer margin that's SMALLER than
+  // the grid gap looks cramped (tighter than the grid's own internal
+  // spacing), so if that happens, drop one unit and re-center — repeating
+  // until the margin is at least one full gap, or only one unit is left.
   function computeAxis(sizePt, unitLength, gap) {
     if (!(sizePt > 0) || !(unitLength > 0)) {
-      return { count: 0, used: 0, margin: sizePt, marginEach: sizePt / 2, ok: false };
+      return { count: 0, used: 0, margin: sizePt, marginEach: sizePt / 2, reduced: false, ok: false };
     }
     const pitch = unitLength + gap;
-    let count;
-    if (pitch <= 0) {
-      count = Math.floor(sizePt / unitLength);
-    } else {
-      count = Math.floor((sizePt + gap) / pitch);
-    }
+    let count = pitch > 0 ? Math.floor((sizePt + gap) / pitch) : Math.floor(sizePt / unitLength);
     if (count < 0) count = 0;
-    let used = count > 0 ? count * unitLength + (count - 1) * gap : 0;
-    while (count > 0 && used > sizePt + 1e-9) {
-      count--;
-      used = count > 0 ? count * unitLength + (count - 1) * gap : 0;
+    while (count > 0 && count * unitLength + (count - 1) * gap > sizePt + 1e-9) count--;
+
+    if (count === 0) {
+      return { count: 0, used: 0, margin: sizePt, marginEach: sizePt / 2, reduced: false, ok: false };
     }
-    const margin = sizePt - used;
-    const marginEach = margin / 2;
-    const ok = margin <= gap + 1e-6;
-    return { count, used, margin, marginEach, ok };
+
+    let used = count * unitLength + (count - 1) * gap;
+    let margin = sizePt - used;
+    let marginEach = margin / 2;
+    let reduced = false;
+
+    while (count > 1 && marginEach < gap - 1e-6) {
+      count--;
+      used = count * unitLength + (count - 1) * gap;
+      margin = sizePt - used;
+      marginEach = margin / 2;
+      reduced = true;
+    }
+
+    const ok = marginEach >= gap - 1e-6;
+    return { count, used, margin, marginEach, reduced, ok };
   }
 
   function calcCharGrid() {
@@ -466,32 +809,33 @@ ${innerContent}
 
     placementResultsEl.innerHTML = `
       <div class="result-row">
-        <span class="result-label">横方向の個数（列）</span>
+        <span class="result-label">横方向の個数（列）${colInfo.reduced ? '<span class="tag good">左右の余白が狭いため減らして中央揃え</span>' : ''}</span>
         <span class="result-value">${colInfo.count}<span class="unit">個</span></span>
       </div>
       <div class="result-row">
-        <span class="result-label">左右の余白（片側）</span>
+        <span class="result-label">左右の余白（片側・中央揃え）</span>
         <span class="result-value ${colInfo.ok ? 'good' : 'warn'}">${fmt(colInfo.marginEach)}<span class="unit">pt</span></span>
-        <span class="tag ${colInfo.ok ? 'good' : 'warn'}">${colInfo.ok ? 'OK' : '余白大'}</span>
+        <span class="tag ${colInfo.ok ? 'good' : 'warn'}">${colInfo.ok ? 'OK' : '余白狭'}</span>
       </div>
       <div class="result-row">
-        <span class="result-label">縦方向の個数（行）</span>
+        <span class="result-label">縦方向の個数（行）${rowInfo.reduced ? '<span class="tag good">上下の余白が狭いため減らして中央揃え</span>' : ''}</span>
         <span class="result-value">${rowInfo.count}<span class="unit">個</span></span>
       </div>
       <div class="result-row">
-        <span class="result-label">上下の余白（片側）</span>
+        <span class="result-label">上下の余白（片側・中央揃え）</span>
         <span class="result-value ${rowInfo.ok ? 'good' : 'warn'}">${fmt(rowInfo.marginEach)}<span class="unit">pt</span></span>
-        <span class="tag ${rowInfo.ok ? 'good' : 'warn'}">${rowInfo.ok ? 'OK' : '余白大'}</span>
+        <span class="tag ${rowInfo.ok ? 'good' : 'warn'}">${rowInfo.ok ? 'OK' : '余白狭'}</span>
       </div>
     `;
 
+    const style = getCellStyle();
     const pitch = gridLength + gridGap;
     let cells = '';
     for (let i = 0; i < colInfo.count; i++) {
       const x = colInfo.marginEach + i * pitch;
       for (let j = 0; j < rowInfo.count; j++) {
         const y = rowInfo.marginEach + j * pitch;
-        cells += `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(gridLength)}" height="${fmt(gridLength)}" fill="#cfe0f7" stroke="#7fa8dc" stroke-width="0.25"/>`;
+        cells += `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(gridLength)}" height="${fmt(gridLength)}" fill="${style.fillColor}" stroke="${style.strokeColor}" stroke-width="${fmt(style.strokeWidth)}" opacity="${fmt(style.opacity)}"/>`;
       }
     }
     const contentBox = `<rect x="${fmt(colInfo.marginEach)}" y="${fmt(rowInfo.marginEach)}" width="${fmt(colInfo.used)}" height="${fmt(rowInfo.used)}" fill="none" stroke="#d9572c" stroke-width="0.5" stroke-dasharray="3,2"/>`;
@@ -556,12 +900,13 @@ ${innerContent}
       return;
     }
 
+    const style = getCellStyle();
     let cells = '';
     for (let i = 0; i < cols; i++) {
       const x = marginLRPt + i * (colWidth + gutterPt);
       for (let j = 0; j < rows; j++) {
         const y = marginTBPt + j * (rowHeight + gutterPt);
-        cells += `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(colWidth)}" height="${fmt(rowHeight)}" fill="#d9e8d0" stroke="#7fae6a" stroke-width="0.25"/>`;
+        cells += `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(colWidth)}" height="${fmt(rowHeight)}" fill="${style.fillColor}" stroke="${style.strokeColor}" stroke-width="${fmt(style.strokeWidth)}" opacity="${fmt(style.opacity)}"/>`;
       }
     }
     const contentBox = `<rect x="${fmt(marginLRPt)}" y="${fmt(marginTBPt)}" width="${fmt(contentW)}" height="${fmt(contentH)}" fill="none" stroke="#3d6ea5" stroke-width="0.5" stroke-dasharray="3,2"/>`;
@@ -574,6 +919,7 @@ ${innerContent}
   divDownloadBtn.addEventListener('click', () => download(lastDivSVG, 'grid_division.svg'));
 
   function recalcAll() {
+    updateColorPreview();
     calcCharGrid();
     calcDivisionGrid();
   }
@@ -581,7 +927,10 @@ ${innerContent}
   [
     fontSizeEl, leadingEl, linesEl,
     abWidthEl, abHeightEl, abUnitEl,
-    divColsEl, divRowsEl, divGutterEl, divMarginLREl, divMarginTBEl
+    divColsEl, divRowsEl, divGutterEl, divMarginLREl, divMarginTBEl,
+    fillOnEl, strokeOnEl, strokeWidthEl, colorModeEl, opacitySliderEl,
+    rSliderEl, gSliderEl, bSliderEl,
+    cSliderEl, mSliderEl, ySliderEl, kSliderEl
   ].forEach(el => {
     el.addEventListener('input', recalcAll);
     el.addEventListener('change', recalcAll);
