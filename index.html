@@ -72,7 +72,7 @@
     flex: 1;
     min-width: 0;
   }
-  input[type="number"] {
+  input.calc-input {
     width: 100%;
     padding: 10px 12px;
     font-size: 15px;
@@ -91,7 +91,7 @@
     background: #fbfbfa;
     color: var(--ink);
   }
-  input[type="number"]:focus, select:focus {
+  input.calc-input:focus, select:focus {
     outline: none;
     border-color: var(--accent);
   }
@@ -254,6 +254,36 @@
     color: #777;
   }
 
+  /* ---- artboard row extras ---- */
+  .ab-size-row { align-items: flex-end; }
+  .swap-btn {
+    flex: 0 0 44px;
+    height: 41px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fff;
+    font-size: 18px;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .swap-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .swap-btn:active { background: #f0f0ee; }
+  .ab-hint {
+    font-size: 11px;
+    color: #999;
+    line-height: 1.6;
+    margin: -4px 0 10px;
+  }
+  .ab-hint code {
+    font-family: var(--mono);
+    background: #f0f0ee;
+    padding: 0 4px;
+    border-radius: 2px;
+    color: #666;
+  }
+  input.calc-input.invalid { border-color: var(--accent); background: #fdf2ee; }
+
   .color-panel {
     margin-top: 4px;
     border: 1px solid var(--line);
@@ -331,21 +361,31 @@
   <h2>アートボード（共通）</h2>
   <div class="row">
     <div class="field">
-      <label for="abWidth">幅</label>
-      <input type="number" id="abWidth" value="210" step="0.1">
-    </div>
-    <div class="field">
-      <label for="abHeight">高さ</label>
-      <input type="number" id="abHeight" value="297" step="0.1">
+      <label for="abPreset">プリセット</label>
+      <select id="abPreset"></select>
     </div>
     <div class="field" style="flex: 0 0 84px;">
       <label for="abUnit">単位</label>
       <select id="abUnit">
         <option value="mm" selected>mm</option>
         <option value="pt">pt</option>
+        <option value="px">px</option>
       </select>
     </div>
   </div>
+  <div class="row ab-size-row">
+    <div class="field">
+      <label for="abWidth">幅</label>
+      <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="abWidth" value="210">
+    </div>
+    <button type="button" class="swap-btn" id="swapBtn" title="縦と横を入れ替え" aria-label="縦と横を入れ替え">⇄</button>
+    <div class="field">
+      <label for="abHeight">高さ</label>
+      <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="abHeight" value="297">
+    </div>
+  </div>
+  <p class="ab-hint" id="abHint"></p>
+  <p class="ab-hint">数値欄には <code>1920+1920</code> や <code>210*2</code> のような計算式も入力できます（Enterまたはフォーカスを外すと結果に置き換わります）。pxはIllustratorと同じく 1px = 1pt として扱います。</p>
 
   <h2>表示スタイル（①②共通）</h2>
   <div class="row">
@@ -359,7 +399,7 @@
   <div class="row">
     <div class="field">
       <label for="strokeWidth">線の太さ (pt)</label>
-      <input type="number" id="strokeWidth" value="0.25" step="0.05" min="0">
+      <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="strokeWidth" value="0.25">
     </div>
   </div>
 
@@ -444,15 +484,15 @@
     <div class="row">
       <div class="field">
         <label for="fontSize">文字サイズ S (pt)</label>
-        <input type="number" id="fontSize" value="7" step="0.1">
+        <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="fontSize" value="7">
       </div>
       <div class="field">
         <label for="leading">文字送り L (pt)</label>
-        <input type="number" id="leading" value="12" step="0.1">
+        <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="leading" value="12">
       </div>
       <div class="field">
         <label for="lines">行どり n</label>
-        <input type="number" id="lines" value="3" step="1" min="1">
+        <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="lines" value="3">
       </div>
     </div>
 
@@ -479,27 +519,27 @@
     <div class="row">
       <div class="field">
         <label for="divCols">横分割数</label>
-        <input type="number" id="divCols" value="6" step="1" min="1">
+        <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="divCols" value="6">
       </div>
       <div class="field">
         <label for="divRows">縦分割数</label>
-        <input type="number" id="divRows" value="10" step="1" min="1">
+        <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="divRows" value="10">
       </div>
     </div>
     <div class="row">
       <div class="field">
         <label for="divGutter">グリッド間隔（単位はアートボードに合わせる）</label>
-        <input type="number" id="divGutter" value="6" step="0.1">
+        <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="divGutter" value="6">
       </div>
     </div>
     <div class="row">
       <div class="field">
         <label for="divMarginLR">左右の余白（片側）</label>
-        <input type="number" id="divMarginLR" value="12" step="0.1">
+        <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="divMarginLR" value="12">
       </div>
       <div class="field">
         <label for="divMarginTB">上下の余白（片側）</label>
-        <input type="number" id="divMarginTB" value="12" step="0.1">
+        <input type="text" inputmode="decimal" autocomplete="off" class="calc-input" id="divMarginTB" value="12">
       </div>
     </div>
 
@@ -594,6 +634,171 @@
   function mmToPt(mm) { return mm * 72 / 25.4; }
   function toPt(value, unit) { return unit === 'mm' ? mmToPt(value) : value; }
 
+  // =========================================================
+  // Expression input (e.g. 1920+1920, 210*2, (297-20)/2)
+  // Safe recursive-descent parser — no eval().
+  // =========================================================
+  function evalExpr(str) {
+    if (typeof str !== 'string') return NaN;
+    const s = str.normalize('NFKC')
+      .replace(/[×✕]/g, '*').replace(/÷/g, '/').replace(/[−‐–—]/g, '-')
+      .replace(/[\s,]/g, '');
+    if (!s) return NaN;
+    let i = 0;
+    function parseExpr() {
+      let v = parseTerm();
+      while (i < s.length && (s[i] === '+' || s[i] === '-')) {
+        const op = s[i++]; const r = parseTerm();
+        v = op === '+' ? v + r : v - r;
+      }
+      return v;
+    }
+    function parseTerm() {
+      let v = parseUnary();
+      while (i < s.length && (s[i] === '*' || s[i] === '/')) {
+        const op = s[i++]; const r = parseUnary();
+        v = op === '*' ? v * r : v / r;
+      }
+      return v;
+    }
+    function parseUnary() {
+      if (s[i] === '-') { i++; return -parseUnary(); }
+      if (s[i] === '+') { i++; return parseUnary(); }
+      return parsePrimary();
+    }
+    function parsePrimary() {
+      if (s[i] === '(') {
+        i++;
+        const v = parseExpr();
+        if (s[i] !== ')') throw new Error('paren');
+        i++;
+        return v;
+      }
+      const m = /^(\d+\.?\d*|\.\d+)/.exec(s.slice(i));
+      if (!m) throw new Error('num');
+      i += m[0].length;
+      return parseFloat(m[0]);
+    }
+    try {
+      const v = parseExpr();
+      if (i !== s.length || !isFinite(v)) return NaN;
+      return v;
+    } catch (e) {
+      return NaN;
+    }
+  }
+
+  function intExpr(str) {
+    const v = evalExpr(str);
+    return isNaN(v) ? NaN : Math.round(v);
+  }
+
+  const integerFieldIds = new Set(['lines', 'divCols', 'divRows']);
+
+  // Replace the field's text with its evaluated result once editing is done
+  function commitExpr(el) {
+    const v = evalExpr(el.value);
+    if (isNaN(v)) return;
+    const out = integerFieldIds.has(el.id) ? Math.round(v) : Math.round(v * 10000) / 10000;
+    el.value = String(out);
+    el.classList.remove('invalid');
+  }
+
+  document.querySelectorAll('input.calc-input').forEach(el => {
+    el.addEventListener('input', () => {
+      el.classList.toggle('invalid', el.value.trim() !== '' && isNaN(evalExpr(el.value)));
+    });
+    el.addEventListener('change', () => commitExpr(el));
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { commitExpr(el); recalcAll(); el.blur(); }
+    });
+  });
+
+  // =========================================================
+  // Artboard presets + swap
+  // =========================================================
+  // [id, label, width, height, unit] — stored in portrait (or natural) orientation
+  const AB_PRESET_GROUPS = [
+    { label: '印刷（A判）', items: [
+      ['a0', 'A0', 841, 1189, 'mm'], ['a1', 'A1', 594, 841, 'mm'], ['a2', 'A2', 420, 594, 'mm'],
+      ['a3', 'A3', 297, 420, 'mm'], ['a4', 'A4', 210, 297, 'mm'], ['a5', 'A5', 148, 210, 'mm'],
+      ['a6', 'A6', 105, 148, 'mm']
+    ]},
+    { label: '印刷（B判・JIS）', items: [
+      ['b0', 'B0', 1030, 1456, 'mm'], ['b1', 'B1', 728, 1030, 'mm'], ['b2', 'B2', 515, 728, 'mm'],
+      ['b3', 'B3', 364, 515, 'mm'], ['b4', 'B4', 257, 364, 'mm'], ['b5', 'B5', 182, 257, 'mm'],
+      ['b6', 'B6', 128, 182, 'mm']
+    ]},
+    { label: '印刷（その他）', items: [
+      ['hagaki', 'はがき', 100, 148, 'mm'], ['meishi', '名刺（91×55）', 55, 91, 'mm'],
+      ['letter', 'US レター', 215.9, 279.4, 'mm']
+    ]},
+    { label: 'Web・SNS（px）', items: [
+      ['w1080x1920', '1080×1920（縦動画・ストーリーズ）', 1080, 1920, 'px'],
+      ['w1080x1350', '1080×1350（Instagram 4:5）', 1080, 1350, 'px'],
+      ['w1080x1080', '1080×1080（正方形）', 1080, 1080, 'px'],
+      ['w1200x630', '1200×630（OGP）', 1200, 630, 'px'],
+      ['w1280x720', '1280×720（HD・サムネ）', 1280, 720, 'px'],
+      ['w1920x1080', '1920×1080（フルHD）', 1920, 1080, 'px'],
+      ['w2560x1440', '2560×1440（WQHD）', 2560, 1440, 'px'],
+      ['w3840x2160', '3840×2160（4K）', 3840, 2160, 'px'],
+      ['w390x844', '390×844（iPhone）', 390, 844, 'px']
+    ]}
+  ];
+  const AB_PRESETS = AB_PRESET_GROUPS.flatMap(g => g.items.map(([id, label, w, h, unit]) => ({ id, label, w, h, unit })));
+
+  const abPresetEl = document.getElementById('abPreset');
+  const abHintEl = document.getElementById('abHint');
+  const swapBtnEl = document.getElementById('swapBtn');
+
+  (function buildPresetOptions() {
+    let html = '<option value="custom">カスタム</option>';
+    AB_PRESET_GROUPS.forEach(g => {
+      html += `<optgroup label="${g.label}">` +
+        g.items.map(([id, label]) => `<option value="${id}">${label}</option>`).join('') +
+        '</optgroup>';
+    });
+    abPresetEl.innerHTML = html;
+  })();
+
+  function applyPreset(id) {
+    const pr = AB_PRESETS.find(p => p.id === id);
+    if (!pr) return; // "カスタム": leave the values alone
+    abWidthEl.value = String(pr.w);
+    abHeightEl.value = String(pr.h);
+    abUnitEl.value = pr.unit;
+    abWidthEl.classList.remove('invalid');
+    abHeightEl.classList.remove('invalid');
+    recalcAll();
+  }
+
+  // Keep the preset dropdown + hint in step with whatever is typed (either orientation counts as a match)
+  function syncPresetSelect() {
+    const W = evalExpr(abWidthEl.value);
+    const H = evalExpr(abHeightEl.value);
+    const unit = abUnitEl.value;
+    if (isNaN(W) || isNaN(H)) { abHintEl.textContent = ''; return; }
+    const near = (a, b) => Math.abs(a - b) < 0.01;
+    const match = AB_PRESETS.find(p => p.unit === unit && ((near(p.w, W) && near(p.h, H)) || (near(p.w, H) && near(p.h, W))));
+    abPresetEl.value = match ? match.id : 'custom';
+    const orient = near(W, H) ? '正方形' : (W > H ? '横向き' : '縦向き');
+    let name = '';
+    if (match) {
+      const m = match.label.match(/^(.*?)（(.*)）$/);
+      // "1080×1920（縦動画…）" → show the description; "名刺（91×55）" → show the name
+      name = m ? (/^\d/.test(m[1]) ? m[2] : m[1]) : match.label;
+    }
+    abHintEl.textContent = `${name ? name + ' ／ ' : ''}${fmt(W)} × ${fmt(H)} ${unit}（${orient}）`;
+  }
+
+  abPresetEl.addEventListener('change', () => applyPreset(abPresetEl.value));
+  swapBtnEl.addEventListener('click', () => {
+    const tmp = abWidthEl.value;
+    abWidthEl.value = abHeightEl.value;
+    abHeightEl.value = tmp;
+    recalcAll();
+  });
+
   // c,m,y,k given as 0-100 percentages
   function cmykToRgb(c, m, y, k) {
     const C = c / 100, M = m / 100, Y = y / 100, K = k / 100;
@@ -666,7 +871,7 @@
   function getCellStyle() {
     const fillOn = fillOnEl.checked;
     const strokeOn = strokeOnEl.checked;
-    const strokeWidth = strokeOn ? Math.max(0, parseFloat(strokeWidthEl.value) || 0) : 0;
+    const strokeWidth = strokeOn ? Math.max(0, evalExpr(strokeWidthEl.value) || 0) : 0;
     const fillColor = fillOn ? colorStringFromState(colorStates.fill) : 'none';
     const strokeColor = strokeOn ? colorStringFromState(colorStates.stroke) : 'none';
     const opacity = getOpacity();
@@ -690,8 +895,8 @@
   loadTargetIntoUI();
 
   function getArtboard() {
-    const rawW = parseFloat(abWidthEl.value);
-    const rawH = parseFloat(abHeightEl.value);
+    const rawW = evalExpr(abWidthEl.value);
+    const rawH = evalExpr(abHeightEl.value);
     const unit = abUnitEl.value;
     if (isNaN(rawW) || isNaN(rawH) || rawW <= 0 || rawH <= 0) return null;
     return { rawW, rawH, unit, Wpt: toPt(rawW, unit), Hpt: toPt(rawH, unit) };
@@ -756,9 +961,9 @@ ${innerContent}
   }
 
   function calcCharGrid() {
-    const S = parseFloat(fontSizeEl.value);
-    const L = parseFloat(leadingEl.value);
-    const n = parseInt(linesEl.value, 10);
+    const S = evalExpr(fontSizeEl.value);
+    const L = evalExpr(leadingEl.value);
+    const n = intExpr(linesEl.value);
 
     if (isNaN(S) || isNaN(L) || isNaN(n) || n < 1 || S <= 0) {
       resultsEl.innerHTML = '<div class="result-row"><span class="result-label">グリッドの入力値を確認してください</span></div>';
@@ -852,11 +1057,11 @@ ${innerContent}
   // =========================================================
   function calcDivisionGrid() {
     const ab = getArtboard();
-    const cols = parseInt(divColsEl.value, 10);
-    const rows = parseInt(divRowsEl.value, 10);
-    const gutterRaw = parseFloat(divGutterEl.value);
-    const marginLRRaw = parseFloat(divMarginLREl.value);
-    const marginTBRaw = parseFloat(divMarginTBEl.value);
+    const cols = intExpr(divColsEl.value);
+    const rows = intExpr(divRowsEl.value);
+    const gutterRaw = evalExpr(divGutterEl.value);
+    const marginLRRaw = evalExpr(divMarginLREl.value);
+    const marginTBRaw = evalExpr(divMarginTBEl.value);
 
     if (!ab || isNaN(cols) || isNaN(rows) || cols < 1 || rows < 1 ||
         isNaN(gutterRaw) || isNaN(marginLRRaw) || isNaN(marginTBRaw) || gutterRaw < 0 || marginLRRaw < 0 || marginTBRaw < 0) {
@@ -919,6 +1124,7 @@ ${innerContent}
   divDownloadBtn.addEventListener('click', () => download(lastDivSVG, 'grid_division.svg'));
 
   function recalcAll() {
+    syncPresetSelect();
     updateColorPreview();
     calcCharGrid();
     calcDivisionGrid();
